@@ -1,92 +1,132 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "linked_list.h"
+#include<stdlib.h>
+#include"arraylist.h"
 
-typedef struct PAIR_s{
-	int data;
-	LINKED_LIST next;
-} PAIR_t[1], *PAIR;
-
-PAIR pair_init(int data) {
-	PAIR p;
-
-	p = malloc(sizeof(PAIR_t));
-	p->data = data;
-	p->next = linked_list_init();
-
-	return p;
+//generic insert implementation
+int insertArrayListGeneric(ArrayList l, void *e, int (*find)(ArrayList, void *))
+{
+	
+	return 0;
 }
 
-void print_graph(LINKED_LIST list) {
-	LINKED_LIST_NODE node;
-	int i, size;
-	PAIR p;
 
-	node = list->head;
-	size = linked_list_size(list);
-	for (i = 0; i < size; ++i) {
-		p = node->data;
-		printf("%d --> ", p->data);
-		linked_list_print(p->next);
-		node = node->next;
+
+#define NAME_SIZE 30
+
+typedef struct Student_s {
+	int id;
+	char name[NAME_SIZE];
+} STUDENT_t, *STUDENT;
+
+int findInsertionIndex_STUDENT_ascending(ArrayList l, void *e)
+{
+	STUDENT s = (STUDENT)e;
+
+	for (int i = 0; i < l->size; i++)
+	{
+		if (strcmp(l->list[i], s->name) == 0)
+			return i;
 	}
+	return -1;
 }
 
-int main(void) {
+int findInsertionIndex_STUDENT_descending(ArrayList l, void *e)
+{
+	STUDENT s = (STUDENT)e;
 
-	LINKED_LIST list;
-	list = linked_list_init();
-
-	/* Firstly, create a small list */
-	PAIR p0, p1, p2, p3, p4, p5, p6, p7, p8;
-
-	p0 = pair_init(0); p4 = pair_init(4);
-	p1 = pair_init(1); p5 = pair_init(5);
-	p2 = pair_init(2); p6 = pair_init(6);
-	p3 = pair_init(3); p7 = pair_init(7);
-	p8 = pair_init(8);
-
-	/* 0-1, 0-3, 0-4 */
-	linked_list_append((LINKED_LIST)p0->next, init_integer(1));
-	linked_list_append((LINKED_LIST)p0->next, init_integer(3));
-	linked_list_append((LINKED_LIST)p0->next, init_integer(4));
-
-	/* 1-2, 1-4 */
-	linked_list_append((LINKED_LIST)p1->next, init_integer(2));
-	linked_list_append((LINKED_LIST)p1->next, init_integer(4));
-
-	/* 2-5 */
-	linked_list_append((LINKED_LIST)p2->next, init_integer(5));
-
-	/* 3-4, 3-6 */
-	linked_list_append((LINKED_LIST)p3->next, init_integer(4));
-	linked_list_append((LINKED_LIST)p3->next, init_integer(6));
-
-	/* 4-5 */
-	linked_list_append((LINKED_LIST)p4->next, init_integer(5));
-
-	/* 6-4, 6-7 */
-	linked_list_append((LINKED_LIST)p6->next, init_integer(4));
-	linked_list_append((LINKED_LIST)p6->next, init_integer(7));
-
-	/* 7-5, 7-8 */
-	linked_list_append((LINKED_LIST)p7->next, init_integer(5));
-	linked_list_append((LINKED_LIST)p7->next, init_integer(8));
-
-
-	/* Secondly, add these small lists into the big list */
-	linked_list_append(list, p0);
-	linked_list_append(list, p1);
-	linked_list_append(list, p2);
-	linked_list_append(list, p3);
-	linked_list_append(list, p4);
-	linked_list_append(list, p5);
-	linked_list_append(list, p6);
-	linked_list_append(list, p7);
-	linked_list_append(list, p8);
-
-
-	print_graph(list);
-
-	return 1;
+	for (int i = l->size-1; i >= 0; i--)
+	{
+		if (strcmp(l->list[i], s->name) == 0)
+			return i;
+	}
+	return -1;
 }
+
+void fprintf_STUDENT(FILE *fp, void *e)
+{
+	//this function is implemented.
+	STUDENT s = (STUDENT)e;
+	fprintf(fp, "%d, %s\n", s->id, s->name);
+}
+
+int compare_STUDENT_name_descending(void *e1, void *e2)
+{
+	STUDENT s1 = (STUDENT)e1;
+	STUDENT s2 = (STUDENT)e2;
+
+	if (strcmp(s1->name, s2->name) > 0)
+	{
+		return 1;
+	}
+	else if (strcmp(s1->name, s2->name) < 0)
+	{
+		return -1;
+	}
+	else { return 0; }
+
+}
+
+
+
+#define INIT_CAP 3
+#define NUM_STUDENT 10
+
+int main()
+{
+	ArrayList arr;
+	STUDENT s;
+	int i;
+	
+	//create array list
+	arr = createArrayList(INIT_CAP);
+	
+	//create and insert students into array list while preserving ascending order w.r.t. their names
+	//the below implementation is exemplary. you can set id and name values differently.
+	for(i=0; i<NUM_STUDENT; i++) {
+		s = malloc(sizeof(STUDENT_t));
+		
+		s->id = i; //each student's id is set to i. you can change this.
+		itoa(i, s->name, 2); //each student's name is set to i in base 2. you can change this.
+		
+		//insertArrayListGeneric(arr, (void *)s, findInsertionIndex_STUDENT_ascending); //this line will work after insertArrayListGeneric and findInsertionIndex_STUDENT_ascending are implemented.
+		insertArrayList(arr, (void *)s, i); //this line should be disabled when the above line works.
+	}
+	
+	//print array list
+	fprintfArrayList(stdout, arr, fprintf_STUDENT);
+	
+	//sort array list in descending order w.r.t. student names
+	bubbleSortArrayList(arr, compare_STUDENT_name_descending); //this line will work after compare_STUDENT_name_descending is implemented.
+	
+	//print array list
+	fprintfArrayList(stdout, arr, fprintf_STUDENT);
+	
+	//create and insert students into array list while preserving descending order w.r.t. their names
+	//the below implementation is exemplary. you can set id and name values differently.
+	for(i=NUM_STUDENT; i<2*NUM_STUDENT; i++) {
+		s = malloc(sizeof(STUDENT_t));
+		
+		s->id = -i; //each student's id is set to -i.
+		itoa(-i, s->name, 2); //each student's name is set to -i in base 2.
+		
+		//insertArrayListGeneric(arr, (void *)s, findInsertionIndex_STUDENT_descending); //this line will work after insertArrayListGeneric and findInsertionIndex_STUDENT_descending are implemented.
+		insertArrayList(arr, (void *)s, i); //this line should be disabled when the above line works.
+	}
+	
+	//print array list
+	fprintfArrayList(stdout, arr, fprintf_STUDENT);
+	
+	//delete and destroy students
+	while(!isArrayListEmpty(arr)) {
+		s = deleteArrayList(arr, arr->size-1);
+		free(s);
+	}
+	
+	//print array list
+	fprintfArrayList(stdout, arr, fprintf_STUDENT);
+	
+	//destroy array list
+	destroyArrayList(arr);
+	
+	return 0;
+}
+
